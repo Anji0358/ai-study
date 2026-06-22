@@ -1,6 +1,6 @@
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.datasets import load_iris
 
 
 class Perceptron(object):
@@ -35,13 +35,12 @@ class Perceptron(object):
         return np.where(self.net_input(X) >= 0.0, 1, -1)
 
 
-url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data'
-df = pd.read_csv(url, header=None, encoding='utf-8')
+iris = load_iris()
 
-y = df.iloc[0:100, 4].values
-y = np.where(y == 'Iris-setosa', -1, 1)
+y = iris.target[0:100]
+y = np.where(y == 0, -1, 1)
 
-X = df.iloc[0:100, [0, 2]].values
+X = iris.data[0:100, [0, 2]]
 
 plt.figure()
 plt.scatter(X[:50, 0], X[:50, 1], marker='o', label='setosa')
