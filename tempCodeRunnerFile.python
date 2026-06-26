@@ -1,0 +1,180 @@
+import heapq
+
+
+class Node:
+    def __init__(self, number):
+        self.number = number
+        self.g = float("inf")
+        self.h = 0
+        self.f = float("inf")
+        self.parent = None
+        self.is_obstacle = False
+
+    def __lt__(self, other):
+        return self.f < other.f
+
+
+class AStarGrid:
+    def __init__(self):
+        self.size = 10
+        self.start_number = 1
+        self.goal_number = 100
+
+        self.nodes = {
+            i: Node(i) for i in range(1, self.size * self.size + 1)
+        }
+
+        self.obstacles = {37, 47, 57, 63, 64, 65, 66, 67}
+
+        for obstacle in self.obstacles:
+            self.nodes[obstacle].is_obstacle = True
+
+        self.moves = [
+            (-1, -1, 141),
+            (-1,  0, 100),
+            (-1,  1, 141),
+            ( 0, -1, 100),
+            ( 0,  1, 100),
+            ( 1, -1, 141),
+            ( 1,  0, 100),
+            ( 1,  1, 141),
+        ]
+
+    def number_to_position(self, number):
+        row = (number - 1) // self.size
+        col = (number - 1) % self.size
+        return row, col
+
+    def position_to_number(self, row, col):
+        return row * self.size + col + 1
+
+    def heuristic(self, number):
+        row, col = self.number_to_position(number)
+        goal_row, goal_col = self.number_to_position(self.goal_number)
+
+        dx = abs(goal_col - col)
+        dy = abs(goal_row - row)
+
+        return 141 * min(dx, dy) + 100 * abs(dx - dy)
+
+    def get_neighbors(self, node):
+        row, col = self.number_to_position(node.number)
+        neighbors = []
+
+        for dr, dc, cost in self.moves:
+            next_row = row + dr
+            next_col = col + dc
+
+            if 0 <= next_row < self.size and 0 <= next_col < self.size:
+                next_number = self.position_to_number(next_row, next_col)
+                next_node = self.nodes[next_number]
+
+                if not next_node.is_obstacle:
+                    neighbors.append((next_node, cost))
+
+        return neighbors
+
+    def reconstruct_path(self):
+        path = []
+        current = self.nodes[self.goal_number]
+
+        while current is not None:
+            path.append(current.number)
+            current = current.parent
+
+        path.reverse()
+        return path
+
+    def search(self):
+        open_list = []
+        open_set = set()
+        closed_set = set()
+
+        start_node = self.nodes[self.start_number]
+        goal_node = self.nodes[self.goal_number]
+
+        start_node.g = 0
+        start_node.h = self.heuristic(start_node.number)
+        start_node.f = start_node.g + start_node.h
+
+        heapq.heappush(open_list, start_node)
+        open_set.add(start_node.number)
+
+        while open_list:
+            current = heapq.heappop(open_list)
+
+            if current.number not in open_set:
+                continue
+
+            if current.number == goal_node.number:
+                return self.reconstruct_path(), goal_node.g
+
+            open_set.remove(current.number)
+            closed_set.add(current.number)
+
+            for neighbor, distance in self.get_neighbors(current):
+                new_g = current.g + distance
+                new_f = new_g + self.heuristic(neighbor.number)
+
+                if neighbor.number not in open_set and neighbor.number not in closed_set:
+                    neighbor.g = new_g
+                    neighbor.h = self.heuristic(neighbor.number)
+                    neighbor.f = new_f
+                    neighbor.parent = current
+
+                    heapq.heappush(open_list, neighbor)
+                    open_set.add(neighbor.number)
+
+                elif new_f < neighbor.f:
+                    neighbor.g = new_g
+                    neighbor.h = self.heuristic(neighbor.number)
+                    neighbor.f = new_f
+                    neighbor.parent = current
+
+                    if neighbor.number in closed_set:
+                        closed_set.remove(neighbor.number)
+                        open_set.add(neighbor.number)
+
+                    heapq.heappush(open_list, neighbor)
+
+        return None, None
+
+    def print_result(self, path, cost):
+        if path is None:
+            print("No route")
+            return
+
+        print("Shortest path:")
+        print(path)
+
+        print()
+        print("Total cost:")
+        print(cost)
+
+        print()
+        print("Grid:")
+        path_set = set(path)
+
+        for row in range(self.size):
+            line = []
+
+            for col in range(self.size):
+                number = self.position_to_number(row, col)
+
+                if number == self.start_number:
+                    line.append(" S ")
+                elif number == self.goal_number:
+                    line.append(" G ")
+                elif number in self.obstacles:
+                    line.append("###")
+                elif number in path_set:
+                    line.append(" * ")
+                else:
+                    line.append(f"{number:3}")
+
+            print(" ".join(line))
+
+
+astar = AStarGrid()
+path, cost = astar.search()
+astar.print_result(path, cost)
