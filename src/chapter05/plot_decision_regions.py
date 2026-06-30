@@ -35,30 +35,36 @@ def plot_decision_regions(X, y, classifier, test_idx=None, resolution=0.02):
     plt.ylim(xx2.min(), xx2.max())
 
     # クラスごとにデータ点をプロット
-    for idx, cl in enumerate(np.unique(y)):
-        plt.scatter(
-            x=X[y == cl, 0],
-            y=X[y == cl, 1],
-            alpha=0.8,
-            c=colors[idx],
-            marker=markers[idx],
-            label=cl,
-            edgecolor='black'
-        )
+    for idx,cl in enumerate(np.unique(y)):
+        plt.scatter(x=X[y==cl,0],y=X[y==cl,1],alpha=0.6,color=cmap(idx),
+                    edgecolors='black',marker=markers[idx],label=cl)
 
-    # テストデータ点を目立たせる（点を○で表示）
-    if test_idx is not None:
-        # すべてのデータ点をプロット
-        X_test, y_test = X[test_idx, :], y[test_idx]
 
-        plt.scatter(
-            X_test[:, 0],
-            X_test[:, 1],
-            facecolors='none',
-            edgecolor='black',
-            alpha=1.0,
-            linewidth=1,
-            marker='o',
-            s=100,
-            label='test set'
-        )
+    # # クラスごとにデータ点をプロット
+    # for idx, cl in enumerate(np.unique(y)):
+    #     plt.scatter(
+    #         x=X[y == cl, 0],
+    #         y=X[y == cl, 1],
+    #         alpha=0.8,
+    #         c=colors[idx],
+    #         marker=markers[idx],
+    #         label=cl,
+    #         edgecolor='black'
+    #     )
+
+    # # テストデータ点を目立たせる（点を○で表示）
+    # if test_idx is not None:
+    #     # すべてのデータ点をプロット
+    #     X_test, y_test = X[test_idx, :], y[test_idx]
+
+    #     plt.scatter(
+    #         X_test[:, 0],
+    #         X_test[:, 1],
+    #         facecolors='none',
+    #         edgecolor='black',
+    #         alpha=1.0,
+    #         linewidth=1,
+    #         marker='o',
+    #         s=100,
+    #         label='test set'
+    #     )
